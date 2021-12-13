@@ -5,7 +5,6 @@ import logging
 import argparse
 import motmetrics as mm
 import matplotlib.pyplot as plt
-%matplotlib inline
 import torch
 from tracker.multitracker import JDETracker
 from utils import visualization as vis
@@ -15,7 +14,6 @@ from utils.evaluation import Evaluator
 from utils.parse_config import parse_model_cfg
 import utils.datasets as datasets
 from utils.utils import *
-
 
 def write_results(filename, results, data_type):
     if data_type == 'mot':
