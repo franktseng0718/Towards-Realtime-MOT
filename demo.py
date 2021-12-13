@@ -57,6 +57,10 @@ def track(opt):
     try:
         eval_seq(opt, dataloader, 'mot', result_filename,
                  save_dir=frame_dir, show_image=True, frame_rate=frame_rate)
+        """
+        eval_seq(opt, dataloader, 'mot', result_filename,
+                 save_dir=frame_dir, show_image=True, frame_rate=frame_rate)
+        """
     except Exception as e:
         logger.info(e)
 
