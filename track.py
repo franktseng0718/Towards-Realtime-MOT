@@ -15,6 +15,10 @@ from utils.parse_config import parse_model_cfg
 import utils.datasets as datasets
 from utils.utils import *
 
+single = False
+mouse_x = 0
+mouse_y = 0
+
 def write_results(filename, results, data_type):
     if data_type == 'mot':
         save_format = '{frame},{id},{x1},{y1},{w},{h},1,-1,-1,-1\n'
@@ -36,6 +40,13 @@ def write_results(filename, results, data_type):
                 f.write(line)
     logger.info('save results to {}'.format(filename))
 
+def mouse_click(event, x, y, flags, param):
+    global mouse_x, mouse_y
+    global single
+    if event == cv2.EVENT_LBUTTONDOWN:
+        mouse_x = x
+        mouse_y = y
+        single = not single
 
 def eval_seq(opt, dataloader, data_type, result_filename, save_dir=None, show_image=True, frame_rate=30):
     '''
@@ -72,13 +83,15 @@ def eval_seq(opt, dataloader, data_type, result_filename, save_dir=None, show_im
        frame_id : int
                   Sequence number of the last sequence
        '''
-
+    track_id = 0
     if save_dir:
         mkdir_if_missing(save_dir)
     tracker = JDETracker(opt, frame_rate=frame_rate)
     timer = Timer()
     results = []
     frame_id = 0
+    cv2.namedWindow('online_im')
+    cv2.setMouseCallback('online_im',mouse_click)
     for path, img, img0 in dataloader:
         if frame_id % 20 == 0:
             logger.info('Processing frame {} ({:.2f} fps)'.format(frame_id, 1./max(1e-5, timer.average_time)))
@@ -100,10 +113,10 @@ def eval_seq(opt, dataloader, data_type, result_filename, save_dir=None, show_im
         # save results
         results.append((frame_id + 1, online_tlwhs, online_ids))
         if show_image or save_dir is not None:
-            online_im = vis.plot_tracking(img0, online_tlwhs, online_ids, frame_id=frame_id,
-                                          fps=1. / timer.average_time)
+            online_im, track_id = vis.plot_tracking(img0, online_tlwhs, online_ids, frame_id=frame_id,
+                                          fps=1. / timer.average_time, single=single, mouse_x=mouse_x, mouse_y=mouse_y, track_id = track_id)
         if show_image:
-            cv2.imshow('online_im', online_im)
+            cv2.imshow('online_im', online_im)            
             cv2.waitKey(1)
             #plt.imshow(online_im)
             #plt.show()

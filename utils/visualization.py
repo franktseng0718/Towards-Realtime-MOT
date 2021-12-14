@@ -2,6 +2,7 @@ import numpy as np
 import cv2
 
 
+
 def tlwhs_to_tlbrs(tlwhs):
     tlbrs = np.copy(tlwhs)
     if len(tlbrs) == 0:
@@ -25,7 +26,8 @@ def resize_image(image, max_size=800):
     return image
 
 
-def plot_tracking(image, tlwhs, obj_ids, scores=None, frame_id=0, fps=0., ids2=None):
+def plot_tracking(image, tlwhs, obj_ids, scores=None, frame_id=0, fps=0., 
+                        ids2=None, single=False, mouse_x=0, mouse_y=0, track_id=0):
     im = np.ascontiguousarray(np.copy(image))
     im_h, im_w = im.shape[:2]
 
@@ -43,15 +45,27 @@ def plot_tracking(image, tlwhs, obj_ids, scores=None, frame_id=0, fps=0., ids2=N
         x1, y1, w, h = tlwh
         intbox = tuple(map(int, (x1, y1, x1 + w, y1 + h)))
         obj_id = int(obj_ids[i])
+        #print(obj_id)
         id_text = '{}'.format(int(obj_id))
         if ids2 is not None:
             id_text = id_text + ', {}'.format(int(ids2[i]))
         _line_thickness = 1 if obj_id <= 0 else line_thickness
         color = get_color(abs(obj_id))
-        cv2.rectangle(im, intbox[0:2], intbox[2:4], color=color, thickness=line_thickness)
-        cv2.putText(im, id_text, (intbox[0], intbox[1] + 30), cv2.FONT_HERSHEY_PLAIN, text_scale, (0, 0, 255),
+        if single:          
+            if track_id == obj_id:    
+                cv2.rectangle(im, intbox[0:2], intbox[2:4], color=color, thickness=line_thickness)
+                cv2.putText(im, id_text, (intbox[0], intbox[1] + 30), cv2.FONT_HERSHEY_PLAIN, text_scale, (0, 0, 255),
                     thickness=text_thickness)
-    return im
+            if mouse_x <= intbox[2] and mouse_x >= intbox[0] and mouse_y <= intbox[3] and mouse_y >= intbox[1]:
+                if track_id == 0:
+                    track_id = obj_id
+        else:
+            cv2.rectangle(im, intbox[0:2], intbox[2:4], color=color, thickness=line_thickness)
+            cv2.putText(im, id_text, (intbox[0], intbox[1] + 30), cv2.FONT_HERSHEY_PLAIN, text_scale, (0, 0, 255),
+                    thickness=text_thickness)
+            track_id = 0
+         
+    return im, track_id
 
 
 def plot_trajectory(image, tlwhs, track_ids):
