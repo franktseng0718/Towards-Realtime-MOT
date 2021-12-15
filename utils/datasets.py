@@ -106,8 +106,8 @@ class LoadVideo:  # for inference
     def __next__(self):
         self.count += 1
         if self.count == len(self):
-            #pass
-            raise StopIteration
+            pass
+            #raise StopIteration
         # Read image
         res, img0 = self.cap.read()  # BGR
         assert img0 is not None, 'Failed to load frame {:d}'.format(self.count)
@@ -125,7 +125,8 @@ class LoadVideo:  # for inference
         return self.count, img, img0
     
     def __len__(self):
-        return self.vn  # number of files
+        #return self.vn # number of files
+        return 10001  # for realtime camera(unknown length)
 
 
 class LoadImagesAndLabels:  # for training
